@@ -93,10 +93,16 @@ bool  IRrecv::decodeRC5 (decode_results *results)
 
 	// Get start bits
 	if (getRClevel(results, &offset, &used, RC5_T1) != MARK)   return false ;
-	if (getRClevel(results, &offset, &used, RC5_T1) != SPACE)  return false ;
-	if (getRClevel(results, &offset, &used, RC5_T1) != MARK)   return false ;
+	int fieldBit=getRClevel(results, &offset, &used, RC5_T1);
+	if (fieldBit==MARK) {
+		if (getRClevel(results, &offset, &used, RC5_T1) != SPACE) return false ;
+		data=0x03;
+	} else if (fieldBit==SPACE) {
+		if (getRClevel(results, &offset, &used, RC5_T1) != MARK) return false ;
+		data=0x02;
+	} else return false;
 
-	for (nbits = 0;  offset < irparams.rawlen;  nbits++) {
+	for (nbits = 2;  offset < irparams.rawlen;  nbits++) {
 		int  levelA = getRClevel(results, &offset, &used, RC5_T1);
 		int  levelB = getRClevel(results, &offset, &used, RC5_T1);
 
